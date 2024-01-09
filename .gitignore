@@ -1,0 +1,5 @@
+/backend/uploads
+/backend/__pycache__
+/frontend/node_modules
+/management/node_modules
+/uploads
