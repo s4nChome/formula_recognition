@@ -250,8 +250,7 @@ export default {
         });
         return;
       }
-      this.latexString = '';
-      this.renderedLatex = '';
+      this.clearAll();
       this.status = '正在识别...';
 
       // 准备表单数据
@@ -309,17 +308,52 @@ export default {
       //console.log(this.renderedLatex);
     },
 
-    // 清空输出
-    clearOutput() {
+    //清空所有
+    clearAll() {
       this.latexString = '';
       this.renderedLatex = '';
+      this.correctLatexString = '';
+      this.correctRenderedLatex = '';
+      this.tempLatexString = '';
+      this.tempRenderedLatex = '';
+    },
+
+    // 清空输出
+    clearOutput() {
+      this.clearAll();
       this.status = '等待图片输入...';
     },
 
     // 从剪切板导入图片
     async importFromClipboard() {
+      try {
+        // 获取剪切板上的内容
+        const clipboardItems = await navigator.clipboard.read();
 
+        for (const clipboardItem of clipboardItems) {
+          for (const type of clipboardItem.types) {
+            if (type.startsWith('image/')) {
+              // 获取图片数据
+              const blob = await clipboardItem.getType(type);
+              this.src = URL.createObjectURL(blob);
+              // 更新 selectedFile
+              this.selectedFile = new File([blob], "image.png", { type: blob.type });
+              this.$notify.success({
+                title: '成功',
+                message: '图片粘贴成功',
+              })
+              break;
+            }
+          }
+        }
+      } catch (error) {
+        this.$notify.error({
+          title: '错误',
+          message: error,
+        })
+      }
     },
+
 
     // 复制到剪切板
     async copyToClipboard() {
@@ -331,12 +365,8 @@ export default {
         return;
       }
       try {
-        const textarea = document.createElement('textarea');
-        textarea.textContent = this.latexString;
-        document.body.appendChild(textarea);
-        textarea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textarea);
+        // 使用 navigator.clipboard API 复制文本
+        await navigator.clipboard.writeText(this.latexString);
         this.$notify.success({
           title: '成功',
           message: 'LaTeX 代码已复制到剪切板',
@@ -349,6 +379,7 @@ export default {
         });
       }
     },
+
 
     // 显示大图
     showLargeImage() {
