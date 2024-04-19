@@ -1,9 +1,8 @@
-Flask==3.0.0
+Flask==3.0.3
 Flask_Cors==4.0.0
 flask_sqlalchemy==3.1.1
 fonttools==4.47.0
-Pillow==10.2.0
-PyMySQL==1.1.0
+Pillow==10.3.0
 pix2text==0.2.3.3
 rapid_latex_ocr==0.0.6
-Werkzeug==3.0.1
+Werkzeug==3.0.2
