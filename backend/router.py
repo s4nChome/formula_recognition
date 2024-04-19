@@ -6,11 +6,13 @@ from models import *
 from helpers import *
 from threading import Thread
 from queue import Queue, Empty
+import csv
+from flask import send_file
 
-# 文件上传目录配置
 UPLOAD_FOLDER = 'uploads'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg','webp'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
 
 # 获取模型名字
 @app.route("/modelnames", methods=["GET"])
@@ -226,6 +228,168 @@ def get_wrong_list_page():
     elapse = "{:.5f}".format(end_time - start_time)
     return api_response(data=data, elapsed=elapse)
 
+# 导出识别成功列表
+@app.route("/success/export", methods=["GET"])
+def export_success_list():
+    fileType = request.args.get('fileType', type=str)
+    modelName = request.args.get('selectedModel', type=str)
+    if modelName:
+        Export_list = Success.query.filter_by(model=modelName).all()
+    else:
+        Export_list = Success.query.all()
+
+    # 设置文件路径
+    app.config['EXPORT_FOLDER'] = os.path.join(app.root_path, 'exports')
+
+    # 如果不存在则创建文件夹
+    if not os.path.exists(app.config['EXPORT_FOLDER']):
+        os.makedirs(app.config['EXPORT_FOLDER'])
+
+    txt_file_path = os.path.join(app.config['EXPORT_FOLDER'], 'success_export.txt')
+    csv_file_path = os.path.join(app.config['EXPORT_FOLDER'], 'success_export.csv')
+
+    #写入txt文件
+    if fileType == 'txt':
+        with open(txt_file_path, 'w') as txtfile:
+            for success in Export_list:
+                txtfile.write('id: ' + str(success.id) + '\n')
+                txtfile.write('time: ' + success.time.strftime("%Y-%m-%d %H:%M:%S") + '\n')
+                txtfile.write('model: ' + success.model + '\n')
+                txtfile.write('image: ' + success.image + '\n')
+                txtfile.write('result: ' + success.result + '\n\n')
+
+        return send_file(txt_file_path, as_attachment=True, download_name='success_export.txt')
+    
+    #写入csv文件
+    elif fileType == 'csv':
+        # 定义CSV文件的表头
+        fieldnames = ['id', 'time', 'model', 'image', 'result']
+        with open(csv_file_path, 'w', newline='') as csvfile:
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            writer.writeheader()
+            for success in Export_list:
+                writer.writerow({
+                    'id': success.id,
+                    'time': success.time.strftime("%Y-%m-%d %H:%M:%S"),
+                    'model': success.model,
+                    'image': success.image,
+                    'result': success.result
+                })
+        return send_file(csv_file_path, as_attachment=True, download_name='success_export.csv')
+    
+    # 返回错误信息
+    else:
+        return api_response(message='Invalid file type', code=400)
+    
+
+# 导出识别失败列表
+@app.route("/error/export", methods=["GET"])
+def export_error_list():
+    fileType = request.args.get('fileType', type=str)
+    modelName = request.args.get('selectedModel', type=str)
+    if modelName:
+        Export_list = Error.query.filter_by(model=modelName).all()
+    else:
+        Export_list = Error.query.all()
+    
+    # 设置文件路径
+    app.config['EXPORT_FOLDER'] = os.path.join(app.root_path, 'exports')
+
+    # 如果不存在则创建文件夹
+    if not os.path.exists(app.config['EXPORT_FOLDER']):
+        os.makedirs(app.config['EXPORT_FOLDER'])
+
+    txt_file_path = os.path.join(app.config['EXPORT_FOLDER'], 'error_export.txt')
+    csv_file_path = os.path.join(app.config['EXPORT_FOLDER'], 'error_export.csv')
+
+    # 写入txt文件
+    if fileType == 'txt':
+        with open(txt_file_path, 'w') as txtfile:
+            for error in Export_list:
+                txtfile.write('id: ' + str(error.id) + '\n')
+                txtfile.write('time: ' + error.time.strftime("%Y-%m-%d %H:%M:%S") + '\n')
+                txtfile.write('model: ' + error.model + '\n')
+                txtfile.write('image: ' + error.image + '\n')
+                txtfile.write('reason: ' + error.reason + '\n\n')
+
+        return send_file(txt_file_path, as_attachment=True, download_name='error_export.txt')
+    
+    # 写入csv文件
+    elif fileType == 'csv':
+        # 定义CSV文件的表头
+        fieldnames = ['id', 'time', 'model', 'image', 'reason']
+        with open(csv_file_path, 'w', newline='') as csvfile:
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            writer.writeheader()
+            for error in Export_list:
+                writer.writerow({
+                    'id': error.id,
+                    'time': error.time.strftime("%Y-%m-%d %H:%M:%S"),
+                    'model': error.model,
+                    'image': error.image,
+                    'reason': error.reason
+                })
+        return send_file(csv_file_path, as_attachment=True, download_name='error_export.csv')
+    
+    # 返回错误信息
+    else:
+        return api_response(message='Invalid file type', code=400)
+
+
+# 导出识别错误列表
+@app.route("/wrong/export", methods=["GET"])
+def export_fail_list():
+    fileType = request.args.get('fileType', type=str)
+    modelName = request.args.get('selectedModel', type=str)
+    if modelName:
+        Export_list = Correction.query.filter_by(model=modelName).all()
+    else:
+        Export_list = Correction.query.all()
+
+    # 设置文件路径
+    app.config['EXPORT_FOLDER'] = os.path.join(app.root_path, 'exports')
+
+    # 如果不存在则创建文件夹
+    if not os.path.exists(app.config['EXPORT_FOLDER']):
+        os.makedirs(app.config['EXPORT_FOLDER'])
+    
+    txt_file_path = os.path.join(app.config['EXPORT_FOLDER'], 'correction_export.txt')
+    csv_file_path = os.path.join(app.config['EXPORT_FOLDER'], 'correction_export.csv')
+
+    # 写入txt文件
+    if fileType == 'txt':
+        with open(txt_file_path, 'w') as txtfile:
+            for correction in Export_list:
+                txtfile.write('id: ' + str(correction.id) + '\n')
+                txtfile.write('time: ' + correction.time.strftime("%Y-%m-%d %H:%M:%S") + '\n')
+                txtfile.write('model: ' + correction.model + '\n')
+                txtfile.write('image: ' + correction.image + '\n')
+                txtfile.write('wrong_result: ' + correction.wrong_result + '\n')
+                txtfile.write('right_result: ' + correction.right_result + '\n\n')
+
+        return send_file(txt_file_path, as_attachment=True, download_name='correction_export.txt')
+    
+    # 写入csv文件
+    elif fileType == 'csv':
+        # 定义CSV文件的表头
+        fieldnames = ['id', 'time', 'model', 'image', 'wrong_result', 'right_result']
+        with open(csv_file_path, 'w', newline='') as csvfile:
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            writer.writeheader()
+            for correction in Export_list:
+                writer.writerow({
+                    'id': correction.id,
+                    'time': correction.time.strftime("%Y-%m-%d %H:%M:%S"),
+                    'model': correction.model,
+                    'image': correction.image,
+                    'wrong_result': correction.wrong_result,
+                    'right_result': correction.right_result
+                })
+        return send_file(csv_file_path, as_attachment=True, download_name='correction_export.csv')
+    
+    # 返回错误信息
+    else:
+        return api_response(message='Invalid file type', code=400)
 
 # 获取绘图信息
 @app.route("/statistics", methods=["GET"])

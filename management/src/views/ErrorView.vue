@@ -7,6 +7,7 @@
       </el-select>
       <el-button style="margin-left: 10px;" type="primary" @click="getList"><i class="el-icon-search"></i>搜索</el-button>
       <el-button style="margin-left: 10px;" type="danger" @click="reload"><i class="el-icon-refresh"></i>重置</el-button>
+      <el-button style="margin-left: 10px;" type="success" @click="openFileSelection"><i class="el-icon-upload2"></i>导出</el-button>
     </div>
 
     <!-- 表格 -->
@@ -29,6 +30,22 @@
         :total="total">
       </el-pagination>
     </div>
+  
+    <!-- 导出文件类型选择 -->
+    <el-dialog
+      title="导出文件类型"
+      :visible.sync="FileTypeDialogVisible"
+      width="15%">
+      <span>
+        <div style="text-align: center;">        
+          <el-button type="primary" plain @click="getCSV">CSV</el-button>
+          <el-button type="primary" plain @click="getTXT">TXT</el-button>
+        </div>
+      </span>
+      <span slot="footer">
+        <el-button @click="FileTypeDialogVisible = false" type="danger">关闭</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -42,6 +59,7 @@ export default {
       tableData: [],
       total: 0,
       model: [],
+      FileTypeDialogVisible: false,
       params:{
         pageNum: 1,
         pageSize: 10,
@@ -62,6 +80,11 @@ export default {
         }
       });
       this.getList()
+    },
+
+    // 打开文件选择对话框
+    openFileSelection() {
+      this.FileTypeDialogVisible = true
     },
 
     // 分页搜索
@@ -91,7 +114,19 @@ export default {
     handleCurrentChange(pageNum) {
       this.params.pageNum = pageNum
       this.getList()
-    }
+    },
+  
+    // 导出CSV
+    getCSV() {
+      this.FileTypeDialogVisible = false
+      window.open('http://localhost:5000/error/export?fileType=csv&selectedModel=' + this.params.selectedModel)
+    },
+
+    // 导出TXT
+    getTXT() {
+      this.FileTypeDialogVisible = false
+      window.open('http://localhost:5000/error/export?fileType=txt&selectedModel=' + this.params.selectedModel)
+    },
   }
 }
 </script>

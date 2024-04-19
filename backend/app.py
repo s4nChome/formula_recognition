@@ -9,7 +9,7 @@ CORS(app)
 HOSTNAME = "127.0.0.1"
 PORT = "3306"
 DATABASE = "formula_recognition"
-USERNAME = "root"
+USERNAME = "s4nchome"
 PASSWORD = "12345678"
 app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://{USERNAME}:{PASSWORD}@{HOSTNAME}:{PORT}/{DATABASE}?charset=utf8mb4"
 db = SQLAlchemy(app)

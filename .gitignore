@@ -1,7 +1,8 @@
-/backend/uploads
 /backend/__pycache__
+/backend/exports
 /frontend/node_modules
 /frontend/certs
 /management/node_modules
+/management/certs
 /uploads
 .DS_Store
