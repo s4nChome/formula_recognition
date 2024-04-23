@@ -1,13 +1,13 @@
 import axios from 'axios';
 
 const request = axios.create({
-    baseURL: 'http://localhost:5000/',
+    baseURL: 'http://127.0.0.1:5000/',
     timeout: 5000
 })
 
 request.interceptors.request.use(config => {
     config.headers['Content-Type'] = 'application/json;charset=UTF-8';
-    
+
     return config;
 }, error => {
     return Promise.reject(error);

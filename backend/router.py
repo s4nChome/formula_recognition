@@ -68,6 +68,10 @@ def upload_file():
                 res,elapse = RapidLatexOCR_recognize(filepath)
             elif model_name == 'Pix2Text':
                 res,elapse = Pix2Text_recognize(filepath)
+            elif model_name == 'pix2tex_e35_step4941':
+                res,elapse = Pix2Tex_recognize(filepath)
+            elif model_name == 'InternVL':
+                res,elapse = internVL_recognize(filepath)
             else:
                 queue.put(('Error', 'No such model', 0))
                 return
@@ -79,9 +83,9 @@ def upload_file():
     thread = Thread(target=process_file)
     thread.start()
 
-    # 等待线程完成，最多10秒
+    # 等待线程完成，最多20秒
     try:
-        result, message, elapse = queue.get(timeout=8)
+        result, message, elapse = queue.get(timeout=200)
     except Empty:
         # 保存识别超时的日志
         recognition_fail(filepath, 'Processing Timeout', model_name)
