@@ -43,7 +43,7 @@
             <el-button style="float: right; padding: 3px 0" type="text" @click="clearOutput">清空输出</el-button>
           </el-col>
           <el-col style="height: 300px; font-size: 20px;line-height: 300px; background-color: #f5f7fa; overflow-y: auto;">
-            <div v-html="renderedLatex" style="text-align: center;"></div>
+            <div v-loading="loading" v-html="renderedLatex" style="text-align: center;"></div>
           </el-col>
           <el-col>
             <el-input v-model="latexString" type="textarea" :rows="5" readonly
@@ -126,7 +126,8 @@ export default {
       correctLatexString: '',
       correctRenderedLatex: '',
       tempLatexString: '',
-      tempRenderedLatex: ''
+      tempRenderedLatex: '',
+      loading: false
     };
   },
 
@@ -251,6 +252,7 @@ export default {
         return;
       }
       this.clearAll();
+      this.loading = true;
       this.status = '正在识别...';
 
       // 准备表单数据
@@ -287,6 +289,9 @@ export default {
             title: '错误',
             message: error.message,
           });
+        })
+        .finally(() => {
+          this.loading = false;
         });
     },
 

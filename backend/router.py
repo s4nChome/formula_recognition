@@ -68,7 +68,7 @@ def upload_file():
                 res,elapse = RapidLatexOCR_recognize(filepath)
             elif model_name == 'Pix2Text':
                 res,elapse = Pix2Text_recognize(filepath)
-            elif model_name == 'pix2tex_e35_step4941':
+            elif model_name == 'pix2tex_e50_step4941':
                 res,elapse = Pix2Tex_recognize(filepath)
             elif model_name == 'InternVL':
                 res,elapse = internVL_recognize(filepath)

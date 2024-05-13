@@ -7,7 +7,7 @@ import signal
 from models import *
 from app import db
 from PIL import Image
-import csv
+import cv2
 
 def api_response(data=None, message=None, code=200, elapsed=None, filepath=None):
     response = {
@@ -63,28 +63,42 @@ def correction_result(image_path, wrong_result,right_result, model):
     db.session.commit()
 
 # 保存识别图片
-def save_file(file, upload_folder, allowed_extensions):
+def save_file(file_storage, upload_folder, allowed_extensions):
     # 检查文件扩展名是否允许
-    if '.' in file.filename and file.filename.rsplit('.', 1)[1].lower() in allowed_extensions:
+    filename = file_storage.filename
+    if '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_extensions:
         # 确保上传文件夹存在，如果不存在则创建它
         if not os.path.exists(upload_folder):
             os.makedirs(upload_folder)
         
         # 生成唯一的文件名
-        unique_filename = str(uuid.uuid4()) + '.' + file.filename.rsplit('.', 1)[1].lower()
+        unique_filename = str(uuid.uuid4()) + '.' + filename.rsplit('.', 1)[1].lower()
         filepath = os.path.join(upload_folder, unique_filename)
+
+        # 保存文件以进行读取
+        temp_filepath = os.path.join(upload_folder, filename)
+        file_storage.save(temp_filepath)
         
         try:
-            # 打开图像并获取其大小
-            img = Image.open(file)
-            width, height = img.size
-            
-            # 将图像的大小放大一倍
-            img = img.resize((width * 2, height * 2), Image.BICUBIC)
-            
-            # 保存图像
-            img.save(filepath)
-            
+            # 读取图像并转换为灰度图
+            img = cv2.imread(temp_filepath, cv2.IMREAD_GRAYSCALE)
+
+            # 使用双边滤波去除噪声
+            bilateral_filtered = cv2.bilateralFilter(img, d=9, sigmaColor=15, sigmaSpace=15)
+
+            # 获取图像原始尺寸
+            height, width = bilateral_filtered.shape[:2]
+
+            # 使用双三次插值将图像的尺寸放大两倍
+            enlarged_img = cv2.resize(bilateral_filtered, (2*width, 2*height), interpolation=cv2.INTER_CUBIC)
+
+            # 应用自适应阈值
+            thresholded_image = cv2.adaptiveThreshold(enlarged_img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 31, 10)
+
+            cv2.imwrite(filepath, thresholded_image)
+
+            os.remove(temp_filepath)
+
             return filepath
         except Exception as e:
             # 处理可能的异常情况

@@ -14,7 +14,7 @@ PASSWORD = "12345678"
 app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://{USERNAME}:{PASSWORD}@{HOSTNAME}:{PORT}/{DATABASE}?charset=utf8mb4"
 db = SQLAlchemy(app)
 
-# 导入业务逻辑
+# 导入API
 from router import *
 
 if __name__ == '__main__':
